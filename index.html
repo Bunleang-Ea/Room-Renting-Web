@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Renting System</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eef2f3; display: flex; justify-content: center; padding: 20px; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+        h2 { color: #2c3e50; text-align: center; margin-bottom: 20px; }
+        label { font-size: 14px; color: #7f8c8d; font-weight: bold; }
+        input { width: 100%; padding: 12px; margin: 8px 0 18px 0; border: 1px solid #dcdde1; border-radius: 6px; box-sizing: border-box; }
+        .row { display: flex; gap: 10px; }
+        .row div { flex: 1; }
+        button { width: 100%; padding: 15px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #2980b9; }
+        #message { text-align: center; margin-top: 15px; color: #27ae60; display: none; font-weight: bold; }
+        .error-text { color: #e74c3c; font-size: 12px; margin-top: -15px; margin-bottom: 10px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Renter Registration</h2>
+    <form id="rentForm">
+        <label>Full Name</label>
+        <input type="text" id="name" placeholder="John Doe" required>
+
+        <label>Government ID</label>
+        <input type="text" id="gov_id" placeholder="ID Number" maxlength="10" required>
+
+        <div class="row">
+            <div>
+                <label>Phone Numbe</label>
+                <input type="tel" id="phone" placeholder="XXXXXXXXXX" 
+                       minlength="9" maxlength="9" 
+                       pattern="0[0-9]{8}" 
+                       title="Phone number must be 9 digits and start with 0" required>
+            </div>
+            <div>
+                <label>Room Number</label>
+                <input type="text" id="room" placeholder="A-101" required>
+            </div>
+        </div>
+
+        <div class="row">
+            <div>
+                <label>Start Date</label>
+                <input type="date" id="start_date" required>
+            </div>
+            <div>
+                <label>End Date (Optional)</label>
+                <input type="date" id="end_date">
+            </div>
+        </div>
+
+        <button type="submit" id="submitBtn">Submit Registration</button>
+    </form>
+    <p id="message">✅ Registration recorded successfully!</p>
+</div>
+
+<script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyip82Ed_Grh2eENTSikTOJQMarmZ7PymMtIq5sbJWXx8lh80boKjD9KQc_3mxYJaah/exec';
+    const form = document.getElementById('rentForm');
+    const msg = document.getElementById('message');
+
+    form.addEventListener('submit', e => {
+        e.preventDefault();
+        
+        const phoneInput = document.getElementById('phone').value;
+        const govIdInput = document.getElementById('gov_id').value;
+
+        // 1. Phone Validation: Must be 9 digits and start with 0
+        const phoneRegex = /^0[0-9]{8}$/;
+        if (!phoneRegex.test(phoneInput)) {
+            alert("Phone number must be exactly 9 digits and start with 0 (e.g., 012345678)");
+            return;
+        }
+
+        // 2. Gov ID Validation
+        if (govIdInput.length > 10) {
+            alert("Government ID must be 10 characters or less.");
+            return;
+        }
+
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerText = "Processing...";
+
+        const payload = {
+            name: document.getElementById('name').value,
+            gov_id: govIdInput,
+            phone: phoneInput,
+            room_no: document.getElementById('room').value,
+            start_date: document.getElementById('start_date').value,
+            end_date: document.getElementById('end_date').value || "N/A"
+        };
+
+        fetch(scriptURL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify(payload)
+        })
+        .then(() => {
+            msg.style.display = "block";
+            form.reset();
+            btn.disabled = false;
+            btn.innerText = "Submit Registration";
+            setTimeout(() => { msg.style.display = "none"; }, 5000);
+        })
+        .catch(err => {
+            alert('Error: ' + err.message);
+            btn.disabled = false;
+            btn.innerText = "Submit Registration";
+        });
+    });
+</script>
+
+</body>
+</html>
