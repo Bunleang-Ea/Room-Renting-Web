@@ -3,203 +3,464 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ប្រព័ន្ធគ្រប់គ្រងការជួលបន្ទប់</title>
+    <title>Property Management System</title>
     <style>
-        body { font-family: 'Segoe UI', 'Battanbang', sans-serif; background: #eef2f3; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 550px; margin-bottom: 20px; }
-        h2 { color: #2c3e50; text-align: center; margin-top: 0; font-size: 22px; }
-        h3 { color: #2c3e50; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #3498db; display: inline-block; padding-bottom: 5px; }
-        label { font-size: 13px; color: #7f8c8d; font-weight: bold; display: block; margin-top: 12px; }
-        input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #dcdde1; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
-        .row { display: flex; gap: 10px; }
-        .row div { flex: 1; }
-        
-        /* Map Styling */
-        .map-container { width: 100%; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 600px; background: white; padding: 10px; box-sizing: border-box; }
-        .map-container iframe { width: 100%; height: 350px; border-radius: 8px; }
-
-        .info-table { width: 100%; border-collapse: collapse; margin-top: 20px; display: none; background: #fff; }
-        .info-table th { background-color: #f1f4f9; color: #2c3e50; border: 1px solid #ccc; padding: 6px; font-size: 12px; }
-        .info-table td { border: 1px solid #ccc; padding: 8px; text-align: center; font-size: 14px; }
-        .highlight-header { background-color: #d1ecf1 !important; color: #0c5460 !important; }
-        .price-cell { font-weight: bold; color: #007bff; background-color: #e7f3ff !important; }
-        
-        button { width: 100%; padding: 14px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 20px; }
-        button:disabled { background: #bdc3c7; cursor: not-allowed; }
-        .btn-error { background: #e74c3c !important; }
-        #message { text-align: center; color: #27ae60; display: none; font-weight: bold; margin-top: 15px; }
+        body { font-family: 'Segoe UI', 'BATTAMBANG', sans-serif; background: #eef2f3; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 1100px; }
+        .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #dcdde1; width: 100%; max-width: 1100px; }
+        .tab-btn { padding: 12px 25px; cursor: pointer; border: none; background: none; font-weight: bold; font-size: 16px; color: #7f8c8d; transition: 0.3s; }
+        .tab-btn.active { color: #3498db; border-bottom: 4px solid #3498db; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .grid-three { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+        label { font-size: 15px; color: #34495e; font-weight: bold; display: block; margin-top: 15px; }
+        input, select, textarea { width: 100%; padding: 12px; margin-top: 8px; border: 1px solid #dcdde1; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
+        .info-table { width: 100%; border-collapse: collapse; margin-top: 30px; background: #fafbfc; }
+        .info-table th, .info-table td { border: 1px solid #ddd; padding: 12px; text-align: center; font-size: 14px; }
+        .info-table th { background: #e8f0fe; color: #2c3e50; }
+        .btn-group { display: flex; gap: 20px; margin-top: 35px; justify-content: center; }
+        button { padding: 16px 40px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 18px; color: white; min-width: 200px; }
+        #saveBtn, #saveUtilBtn, #payBtn { background: #3498db; }
+        #updateBtn { background: #27ae60; }
+        #clearBtn, #clearUtilBtn, #clearPayBtn { background: #95a5a6; }
+        .btn-end { background: #c0392b !important; }
+        button:disabled { background: #bdc3c7 !important; cursor: not-allowed; }
+        .btn-rented { background: #e74c3c !important; cursor: not-allowed; }
+        .header-title { text-align: center; color: #2c3e50; margin-bottom: 25px; border-bottom: 3px solid #3498db; padding-bottom: 15px; font-size: 24px; }
+        .search-box { margin-bottom: 25px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef; }
+        .readonly-input { background: #f1f2f6; color: #7f8c8d; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>ចុះឈ្មោះអ្នកជួលថ្មី</h2>
-    <form id="rentForm">
-        <label>ឈ្មោះ អ្នកជួល (Name)</label>
-        <input type="text" id="name" placeholder="បញ្ចូលឈ្មោះ" required>
-
-        <div class="row">
-            <div>
-                <label>លេខទំនាក់ទំនង (Contact)</label>
-                <input type="tel" id="contact" placeholder="0XXXXXXXX" required>
-            </div>
-            <div>
-                <label>Telegram</label>
-                <input type="text" id="telegram" placeholder="Username" required>
-            </div>
-        </div>
-
-        <label>អត្តសញ្ញាណប័ណ្ណ (Government ID)</label>
-        <input type="text" id="gov_id" placeholder="បញ្ចូលលេខអត្តសញ្ញាណប័ណ្ណ" required>
-
-        <div class="row">
-            <div>
-                <label>លេខបន្ទប់ (Room Number)</label>
-                <input type="text" id="room" placeholder="A-01" required>
-            </div>
-            <div>
-                <label>ថ្ងៃចូលស្នាក់នៅ (Start Date)</label>
-                <input type="date" id="start_date" required>
-            </div>
-        </div>
-
-        <div class="row">
-            <div>
-                <label>ថ្ងៃចុះកុងត្រា (Contract Date)</label>
-                <input type="date" id="contract_date" required>
-            </div>
-            <div>
-                <label>រយៈពេលកុងត្រា (Term)</label>
-                <input type="text" id="contract_term" placeholder="ឧទាហរណ៍: 6 ខែ" required>
-            </div>
-        </div>
-
-        <table class="info-table" id="infoGrid">
-            <tr>
-                <th class="highlight-header">លេខបន្ទប់</th>
-                <th class="highlight-header">ជាន់</th>
-                <th class="highlight-header">អគារ</th>
-                <th class="highlight-header">ស្ថានភាព</th>
-            </tr>
-            <tr>
-                <td id="td_room">-</td>
-                <td id="td_floor">-</td>
-                <td id="td_building">-</td>
-                <td id="td_status" style="font-weight:bold;">-</td>
-            </tr>
-            <tr>
-                <th colspan="2" class="highlight-header">តម្លៃជួល</th>
-                <th colspan="2" class="highlight-header">តម្លៃទឹក/m³ (៛)</th>
-            </tr>
-            <tr>
-                <td colspan="2" id="td_price" class="price-cell">-</td>
-                <td colspan="2" id="td_water">-</td>
-            </tr>
-            <tr>
-                <th colspan="2" class="highlight-header">តម្លៃភ្លើង/kwh (៛)</th>
-                <th colspan="2" class="highlight-header">ប្រាក់កក់</th>
-            </tr>
-            <tr>
-                <td colspan="2" id="td_electric">-</td>
-                <td colspan="2" id="td_deposit">-</td>
-            </tr>
-            <tr>
-                <th colspan="4" class="highlight-header">ថ្លៃសំរាម</th>
-            </tr>
-            <tr>
-                <td colspan="4" id="td_garbage">-</td>
-            </tr>
-        </table>
-
-        <button type="submit" id="submitBtn">បញ្ជូនទិន្នន័យ (Submit)</button>
-    </form>
-    <p id="message">✅ រក្សាទុកបានជោគជ័យ!</p>
+<div class="tabs">
+    <button class="tab-btn active" onclick="openTab(event, 'tenantTab')">Tenant Entry</button>
+    <button class="tab-btn" onclick="openTab(event, 'utilityTab')">Add Water_Electricity</button>
+    <button class="tab-btn" onclick="openTab(event, 'paidTab')">Paid Form</button>
 </div>
 
-<div class="map-container">
-    <h3>ទីតាំង (Location)</h3>
-    <iframe src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d977.230086106799!2d104.83855622846085!3d11.557568013199909!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMTHCsDMzJzI3LjIiTiAxMDTCsDUwJzIxLjEiRQ!5e0!3m2!1sen!2skh!4v1766673953538!5m2!1sen!2skh" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+<div id="tenantTab" class="tab-content active">
+    <div class="card">
+        <h2 class="header-title">បញ្ចូលទិន្នន័យអ្នកជួលថ្មី</h2>
+        <div class="search-box">
+            <label>🔍 ស្វែងរកអ្នកជួលដើម្បីកែប្រែ (Search Tenant to Edit):</label>
+            <select id="searchTenantSelect" onchange="searchTenant(this.value)">
+                <option value="">-- ជ្រើសរើសឈ្មោះ (Select Name) --</option>
+            </select>
+        </div>
+        <form id="rentForm">
+            <div class="grid-container">
+                <div>
+                    <label>ឈ្មោះ អ្នកជួល</label>
+                    <input type="text" id="name" required>
+                    <label>លេខទំនាក់ទំនង</label>
+                    <input type="tel" id="contact" required>
+                    <label>Telegram</label>
+                    <input type="text" id="telegram">
+                    <label>អត្តសញ្ញាណប័ណ្ណ (Gov ID)</label>
+                    <input type="text" id="gov_id">
+                    <label>តម្លៃបន្ទប់ ($)</label>
+                    <input type="number" id="room_price">
+                    <label>អំណានចាស់ (ទឹក)</label>
+                    <input type="number" id="old_water" placeholder="Start Reading">
+                    <label>តម្លៃទឹក/m³ (៛)</label>
+                    <input type="number" id="water_rate">
+                    <label>ប្រាក់កក់ ($)</label>
+                    <input type="number" id="deposit">
+                </div>
+                <div>
+                    <label>លេខបន្ទប់</label>
+                    <select id="room" required><option value="">-- ជ្រើសរើស --</option></select>
+                    <label>ថ្ងៃចុះកុងត្រា</label>
+                    <input type="date" id="contract_date" required>
+                    <label>ជម្រើសកុងត្រា (ខែ)</label>
+                    <input type="number" id="contract_term">
+                    <label>ថ្ងៃចូលស្នាក់នៅ</label>
+                    <input type="date" id="start_date" required>
+                    <label>អំណានចាស់ (ភ្លើង)</label>
+                    <input type="number" id="old_electric" placeholder="Start Reading">
+                    <label>តម្លៃភ្លើង/kwh (៛)</label>
+                    <input type="number" id="electric_rate">
+                    <label>ថ្លៃសម្រាម (៛)</label>
+                    <input type="number" id="garbage_fee">
+                </div>
+            </div>
+            <table class="info-table" id="infoGrid">
+                <thead><tr><th>លេខបន្ទប់</th><th>ជាន់</th><th>អគារ</th><th>ស្ថានភាព</th></tr></thead>
+                <tbody><tr><td id="td_room">-</td><td id="td_floor">-</td><td id="td_building">-</td><td id="td_status">-</td></tr></tbody>
+                <thead><tr><th>តម្លៃជួល</th><th>ទឹក/m³</th><th>ភ្លើង/kwh</th><th>ថ្លៃសម្រាម</th></tr></thead>
+                <tbody><tr><td id="td_price">-</td><td id="td_water">-</td><td id="td_electric">-</td><td id="td_garbage">-</td></tr></tbody>
+                <thead><tr><th colspan="4">ប្រាក់កក់</th></tr></thead>
+                <tbody><tr><td colspan="4" id="td_deposit">-</td></tr></tbody>
+            </table>
+            <div class="btn-group">
+                <button type="button" id="saveBtn">រក្សាទុក (Save)</button>
+                <button type="button" id="updateBtn" disabled>កែប្រែ (Update)</button>
+                <button type="button" id="clearBtn">សម្អាត (Clear)</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="utilityTab" class="tab-content">
+    <div class="card">
+        <h2 class="header-title">ទម្រង់បញ្ចូលទិន្នន័យ ការប្រើប្រាស់ទឹក និងភ្លើង</h2>
+        <form id="utilityForm">
+            <label>ឈ្មោះ អ្នកជួល/លេខបន្ទប់</label>
+            <select id="util_tenant_select" required onchange="fillTenantData()">
+                <option value="">-- ជ្រើសរើសអ្នកជួល --</option>
+            </select>
+            <div class="grid-three">
+                <div><label>ឈ្មោះ អ្នកជួល</label><input type="text" id="util_name" class="readonly-input" readonly></div>
+                <div><label>លេខបន្ទប់</label><input type="text" id="util_room" class="readonly-input" readonly></div>
+                <div><label>តម្លៃបន្ទប់</label><input type="text" id="util_price" class="readonly-input" readonly></div>
+            </div>
+            <div class="grid-three">
+                <div><label>ថ្ងៃចាប់ផ្ដើម</label><input type="date" id="util_start_date" class="readonly-input" readonly></div>
+                <div><label>អំណានចាស់ (ទឹក)</label><input type="number" id="util_old_water" class="readonly-input" readonly></div>
+                <div><label>តម្លៃទឹក/m³</label><input type="number" id="util_water_rate" class="readonly-input" readonly></div>
+            </div>
+            <div class="grid-three">
+                <div><label>អំណានចាស់ (ភ្លើង)</label><input type="number" id="util_old_electric" class="readonly-input" readonly></div>
+                <div><label>តម្លៃភ្លើង/kwh</label><input type="number" id="util_electric_rate" class="readonly-input" readonly></div>
+                <div><label>ថ្លៃសម្រាម</label><input type="number" id="util_garbage" class="readonly-input" readonly></div>
+            </div>
+            <div class="grid-three">
+                <div><label>ថ្ងៃបញ្ចប់</label><input type="date" id="util_end_date"></div>
+                <div><label>អំណានថ្មី (ទឹក)</label><input type="number" id="util_new_water"></div>
+                <div><label>អំណានថ្មី (ភ្លើង)</label><input type="number" id="util_new_electric"></div>
+            </div>
+            <label>សម្ភារៈខូចខាត ($) (Optional)</label>
+            <input type="number" id="util_damage" value="0">
+            <div class="btn-group">
+                <button type="button" id="saveUtilBtn">រក្សាទុក (Save)</button>
+                <button type="button" id="clearUtilBtn">សម្អាត (Clear)</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="paidTab" class="tab-content">
+    <div class="card">
+        <h2 class="header-title">ទម្រង់បង់ប្រាក់ (Payment Form)</h2>
+        <form id="paidForm">
+            <div class="grid-container">
+                <div>
+                    <label>ឈ្មោះ អ្នកជួល/លេខបន្ទប់ (Select Tenant)</label>
+                    <select id="pay_tenant_select" required onchange="fillPayData()">
+                        <option value="">-- ជ្រើសរើសអ្នកជួល --</option>
+                    </select>
+                </div>
+                <div>
+                    <label>ការបង់លើកទី (Payment No)</label>
+                    <input type="text" id="pay_invoice_no"> </div>
+            </div>
+
+            <div class="grid-three">
+                <div><label>ឈ្មោះ អ្នកជួល</label><input type="text" id="pay_name" class="readonly-input" readonly></div>
+                <div><label>លេខបន្ទប់</label><input type="text" id="pay_room" class="readonly-input" readonly></div>
+                <div><label>តម្លៃបន្ទប់</label><input type="text" id="pay_room_price" class="readonly-input" readonly></div>
+            </div>
+            <div class="grid-three">
+                <div><label>ថ្ងៃទីផ្តើម</label><input type="text" id="pay_start_date" class="readonly-input" readonly></div>
+                <div><label>ថ្ងៃទីបញ្ចប់</label><input type="text" id="pay_end_date" class="readonly-input" readonly></div>
+                <div><label>សរុបត្រូវបង់ ($)</label><input type="text" id="pay_total_usd" class="readonly-input" style="font-weight:bold; color:#e74c3c;" readonly></div>
+            </div>
+            <div class="grid-three">
+                <div><label>សរុបត្រូវបង់ (៛)</label><input type="text" id="pay_total_riel" class="readonly-input" style="font-weight:bold; color:#e74c3c;" readonly></div>
+                <div></div> <div></div> </div>
+
+            <hr style="margin: 25px 0; border: 0; border-top: 1px solid #ddd;">
+
+            <div class="grid-three">
+                <div>
+                    <label>បង់ជាក់ស្តែង (៛)</label>
+                    <input type="number" id="pay_actual_riel" placeholder="0">
+                </div>
+                <div>
+                    <label>បង់ជាក់ស្តែង ($)</label>
+                    <input type="number" id="pay_actual_usd" placeholder="0.00">
+                </div>
+                <div>
+                    <label>របៀបបង់</label>
+                    <select id="pay_method" onchange="toggleBank(this.value)">
+                        <option value="">-- Select --</option> <option value="Cash">Cash (សាច់ប្រាក់)</option>
+                        <option value="Bank">Bank (ធនាគារ)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid-three">
+                <div>
+                    <label>ធនាគារ (Bank Name)</label>
+                    <select id="pay_bank" disabled>
+                        <option value="">-- None --</option>
+                        <option value="ABA">ABA Bank</option>
+                        <option value="Acleda">Acleda Bank</option>
+                        <option value="Wing">Wing Bank</option>
+                    </select>
+                </div>
+                <div>
+                    <label>ថ្ងៃទីបង់ (Paid Date)</label>
+                    <input type="date" id="pay_date" required> </div>
+                <div>
+                    <label>បរិយាយ (Description/Note)</label>
+                    <input type="text" id="pay_note">
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" id="payBtn">Paid (បង់ប្រាក់)</button>
+                <button type="button" class="btn-end">Ended (បញ្ចប់)</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <script>
-    // Logic remains exactly the same as your provided script
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxDSWtoKp5yhCOBcFg81RzAYbc81YWXQoXoTwhS8i1-LiUuKW1zi3XNb_HT6hRASdI/exec';
-    const form = document.getElementById('rentForm');
-    const roomInput = document.getElementById('room');
-    const infoGrid = document.getElementById('infoGrid');
-    const submitBtn = document.getElementById('submitBtn');
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbz0_3M1fQ7Q08qG0LeQTHvl0wEM0mqrOTXiHgR7_l3inuUwVuo9-uf6C8AklwQcCJU/exec'; // <--- PASTE YOUR URL HERE
+    let globalTenants = [];
 
-    roomInput.addEventListener('blur', function() {
-        const val = this.value.trim();
-        if(!val) return;
-        submitBtn.disabled = true;
-        submitBtn.innerText = "កំពុងឆែកបន្ទប់...";
+    function openTab(evt, tabName) {
+        let content = document.getElementsByClassName("tab-content");
+        for (let i = 0; i < content.length; i++) content[i].classList.remove("active");
+        let links = document.getElementsByClassName("tab-btn");
+        for (let i = 0; i < links.length; i++) links[i].classList.remove("active");
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
 
-        fetch(`${scriptURL}?room=${encodeURIComponent(val)}&t=${Date.now()}`)
-            .then(res => res.json())
-            .then(data => {
-                if(data.found) {
-                    infoGrid.style.display = "table";
-                    document.getElementById('td_room').innerText = data.roomNo;
-                    document.getElementById('td_floor').innerText = data.floor;
-                    document.getElementById('td_building').innerText = data.building;
-                    document.getElementById('td_status').innerText = data.status;
-                    document.getElementById('td_price').innerText = "$" + data.price;
-                    document.getElementById('td_water').innerText = data.waterRate.toLocaleString() + " ៛";
-                    document.getElementById('td_electric').innerText = data.electricRate.toLocaleString() + " ៛";
-                    document.getElementById('td_deposit').innerText = "$" + data.deposit;
-                    document.getElementById('td_garbage').innerText = data.garbageRate.toLocaleString() + " ៛";
-                    
-                    if(data.status === "ជួល") {
-                        document.getElementById('td_status').style.color = "red";
-                        submitBtn.innerText = "បន្ទប់មិនទំនេរ (Rented)";
-                        submitBtn.classList.add('btn-error');
-                        submitBtn.disabled = true;
-                    } else {
-                        document.getElementById('td_status').style.color = "green";
-                        submitBtn.innerText = "បញ្ជូនទិន្នន័យ (Submit)";
-                        submitBtn.classList.remove('btn-error');
-                        submitBtn.disabled = false;
-                    }
-                } else {
-                    infoGrid.style.display = "none";
-                    submitBtn.innerText = "រកមិនឃើញបន្ទប់ (Not Found)";
-                    submitBtn.classList.add('btn-error');
-                    submitBtn.disabled = true;
-                }
+    window.onload = () => {
+        // Load Rooms
+        fetch(`${scriptURL}?action=getRooms`).then(res => res.json()).then(data => {
+            data.forEach(r => document.getElementById('room').add(new Option(r, r)));
+        });
+        
+        // Load Tenants
+        fetch(`${scriptURL}?action=getTenants`).then(res => res.json()).then(data => {
+            globalTenants = data;
+            const utilSelect = document.getElementById('util_tenant_select');
+            const searchSelect = document.getElementById('searchTenantSelect');
+            const paySelect = document.getElementById('pay_tenant_select');
+            
+            data.forEach(t => {
+                let optLabel = t.label;
+                let optVal = t.name + "|" + t.room;
+                
+                utilSelect.add(new Option(t.label, t.name));
+                searchSelect.add(new Option(optLabel, optVal));
+                paySelect.add(new Option(optLabel, optVal));
             });
-    });
+        });
+    };
 
-    form.addEventListener('submit', e => {
-        e.preventDefault();
-        submitBtn.disabled = true;
-        submitBtn.innerText = "កំពុងរក្សាទុក...";
+    // --- PAID FORM LOGIC ---
+    function toggleBank(method) {
+        const bankSelect = document.getElementById('pay_bank');
+        if (method === 'Bank') {
+            bankSelect.disabled = false;
+            bankSelect.required = true;
+        } else {
+            bankSelect.disabled = true;
+            bankSelect.value = "";
+            bankSelect.required = false;
+        }
+    }
+
+    function fillPayData() {
+        const val = document.getElementById('pay_tenant_select').value;
+        if(!val) return;
+        const [name, room] = val.split("|");
+
+        fetch(`${scriptURL}?action=getPaymentDetails&room=${encodeURIComponent(room)}`)
+        .then(res => res.json())
+        .then(data => {
+            if(data.error) { alert(data.error); return; }
+            
+            document.getElementById('pay_name').value = data.name;
+            document.getElementById('pay_room').value = data.room;
+            document.getElementById('pay_room_price').value = "$" + data.price;
+            document.getElementById('pay_start_date').value = data.start_date;
+            document.getElementById('pay_end_date').value = data.end_date;
+            
+            document.getElementById('pay_total_riel').value = new Intl.NumberFormat('km-KH', { style: 'currency', currency: 'KHR' }).format(data.total_riel);
+            document.getElementById('pay_total_usd').value = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(data.total_usd);
+            
+            // REMOVED: Auto-set payment date to today
+        });
+    }
+
+    document.getElementById('payBtn').onclick = () => {
+        const val = document.getElementById('pay_tenant_select').value;
+        if(!val) { alert("Please select a tenant."); return; }
+        const [name, room] = val.split("|");
 
         const payload = {
+            action: 'submitPayment',
+            room_no: room,
+            invoice_no: document.getElementById('pay_invoice_no').value, // Now sends invoice no
+            pay_date: document.getElementById('pay_date').value,
+            actual_riel: document.getElementById('pay_actual_riel').value,
+            actual_usd: document.getElementById('pay_actual_usd').value,
+            method: document.getElementById('pay_method').value,
+            bank: document.getElementById('pay_bank').value,
+            note: document.getElementById('pay_note').value
+        };
+        sendData(payload, 'payBtn');
+    };
+
+    // --- OTHER LOGIC (UNCHANGED) ---
+    function fillTenantData() {
+        const selectedName = document.getElementById('util_tenant_select').value;
+        const tenant = globalTenants.find(t => t.name === selectedName);
+        if (tenant) {
+            document.getElementById('util_name').value = tenant.name;
+            document.getElementById('util_room').value = tenant.room;
+            document.getElementById('util_price').value = "$" + tenant.price;
+            document.getElementById('util_start_date').value = tenant.startDate;
+            document.getElementById('util_old_water').value = tenant.oldWater;
+            document.getElementById('util_old_electric').value = tenant.oldElectric;
+            fetch(`${scriptURL}?room=${tenant.room}`).then(res => res.json()).then(data => {
+                document.getElementById('util_water_rate').value = data.waterRate;
+                document.getElementById('util_electric_rate').value = data.electricRate;
+                document.getElementById('util_garbage').value = data.garbageRate;
+            });
+        }
+    }
+    
+    function searchTenant(value) {
+        if(!value) return;
+        const [name, room] = value.split("|");
+        fetch(`${scriptURL}?action=getTenantDetails&name=${encodeURIComponent(name)}&room=${encodeURIComponent(room)}`)
+        .then(res => res.json()).then(data => {
+            if(data.error) { alert("Tenant not found"); return; }
+            document.getElementById('name').value = data.name;
+            document.getElementById('contact').value = data.contact;
+            document.getElementById('telegram').value = data.telegram;
+            document.getElementById('gov_id').value = data.gov_id;
+            document.getElementById('room_price').value = data.room_price;
+            document.getElementById('water_rate').value = data.water_rate;
+            document.getElementById('electric_rate').value = data.electric_rate;
+            document.getElementById('garbage_fee').value = data.garbage_fee;
+            document.getElementById('deposit').value = data.deposit;
+            document.getElementById('contract_date').value = data.contract_date;
+            document.getElementById('contract_term').value = data.contract_term;
+            document.getElementById('start_date').value = data.start_date;
+            document.getElementById('old_water').value = data.old_water;
+            document.getElementById('old_electric').value = data.old_electric;
+            const roomSelect = document.getElementById('room');
+            for(let i=0; i<roomSelect.options.length; i++) {
+                if(roomSelect.options[i].value.indexOf(data.room_no) === 0) {
+                    roomSelect.selectedIndex = i;
+                    const roomID = roomSelect.value.split(' ')[0];
+                    fetch(`${scriptURL}?room=${roomID}`).then(res => res.json()).then(rData => {
+                        document.getElementById('td_room').innerText = rData.roomNo;
+                        document.getElementById('td_floor').innerText = rData.floor;
+                        document.getElementById('td_building').innerText = rData.building;
+                        document.getElementById('td_status').innerText = rData.status;
+                        document.getElementById('td_price').innerText = "$" + rData.price;
+                        document.getElementById('td_water').innerText = rData.waterRate + " ៛";
+                        document.getElementById('td_electric').innerText = rData.electricRate + " ៛";
+                        document.getElementById('td_garbage').innerText = rData.garbageRate + " ៛";
+                        document.getElementById('td_deposit').innerText = "$" + rData.deposit;
+                        document.getElementById('saveBtn').disabled = true;
+                        document.getElementById('saveBtn').innerText = "Rented (ជួល)";
+                        document.getElementById('saveBtn').classList.add('btn-rented');
+                        document.getElementById('updateBtn').disabled = false;
+                        document.getElementById('updateBtn').classList.remove('btn-rented');
+                    });
+                    break;
+                }
+            }
+        });
+    }
+
+    document.getElementById('room').onchange = function() {
+        const roomID = this.value.split(' ')[0];
+        fetch(`${scriptURL}?room=${roomID}`).then(res => res.json()).then(data => {
+            document.getElementById('td_room').innerText = data.roomNo;
+            document.getElementById('td_floor').innerText = data.floor;
+            document.getElementById('td_building').innerText = data.building;
+            document.getElementById('td_status').innerText = data.status;
+            document.getElementById('td_price').innerText = "$" + data.price;
+            document.getElementById('td_water').innerText = data.waterRate + " ៛";
+            document.getElementById('td_electric').innerText = data.electricRate + " ៛";
+            document.getElementById('td_garbage').innerText = data.garbageRate + " ៛";
+            document.getElementById('td_deposit').innerText = "$" + data.deposit;
+            document.getElementById('room_price').value = data.price;
+            document.getElementById('water_rate').value = data.waterRate;
+            document.getElementById('electric_rate').value = data.electricRate;
+            document.getElementById('garbage_fee').value = data.garbageRate;
+            document.getElementById('deposit').value = data.deposit;
+            const saveBtn = document.getElementById('saveBtn');
+            const updateBtn = document.getElementById('updateBtn');
+            if (data.status === "ជួល") {
+                saveBtn.innerText = "Rented (ជួល)";
+                saveBtn.classList.add('btn-rented');
+                saveBtn.disabled = true;
+                updateBtn.disabled = false;
+            } else {
+                saveBtn.innerText = "រក្សាទុក (Save)";
+                saveBtn.classList.remove('btn-rented');
+                saveBtn.disabled = false;
+                updateBtn.disabled = true;
+            }
+        });
+    };
+
+    function getFormData(action) {
+        return {
+            action: action,
             name: document.getElementById('name').value,
             contact: document.getElementById('contact').value,
             telegram: document.getElementById('telegram').value,
             gov_id: document.getElementById('gov_id').value,
-            room_no: roomInput.value,
-            room_price: document.getElementById('td_price').innerText.replace('$', ''),
-            water_rate: document.getElementById('td_water').innerText.replace(/[^\d]/g, ''),
-            electric_rate: document.getElementById('td_electric').innerText.replace(/[^\d]/g, ''),
-            garbage_fee: document.getElementById('td_garbage').innerText.replace(/[^\d]/g, ''),
-            start_date: document.getElementById('start_date').value,
+            room_no: document.getElementById('room').value.split(' ')[0],
+            room_price: document.getElementById('room_price').value,
+            deposit: document.getElementById('deposit').value,
+            water_rate: document.getElementById('water_rate').value,
+            electric_rate: document.getElementById('electric_rate').value,
+            garbage_fee: document.getElementById('garbage_fee').value,
             contract_date: document.getElementById('contract_date').value,
-            contract_term: document.getElementById('contract_term').value
+            contract_term: document.getElementById('contract_term').value,
+            start_date: document.getElementById('start_date').value,
+            old_water: document.getElementById('old_water').value,
+            old_electric: document.getElementById('old_electric').value
         };
+    }
 
+    document.getElementById('saveBtn').onclick = () => sendData(getFormData('save'), 'saveBtn');
+    document.getElementById('updateBtn').onclick = () => sendData(getFormData('update'), 'updateBtn');
+
+    document.getElementById('saveUtilBtn').onclick = () => {
+        const payload = {
+            action: 'addUtility',
+            name: document.getElementById('util_name').value,
+            room_no: document.getElementById('util_room').value,
+            start_date: document.getElementById('util_start_date').value,
+            end_date: document.getElementById('util_end_date').value,
+            old_water: document.getElementById('util_old_water').value,
+            new_water: document.getElementById('util_new_water').value,
+            old_electric: document.getElementById('util_old_electric').value,
+            new_electric: document.getElementById('util_new_electric').value,
+            damage: document.getElementById('util_damage').value
+        };
+        sendData(payload, 'saveUtilBtn');
+    };
+
+    function sendData(payload, btnId) {
+        const btn = document.getElementById(btnId);
+        const originalText = btn.innerText;
+        btn.disabled = true;
+        btn.innerText = "Processing...";
         fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
-            .then(() => {
-                document.getElementById('message').style.display = "block";
-                form.reset();
-                infoGrid.style.display = "none";
-                submitBtn.disabled = false;
-                submitBtn.innerText = "បញ្ជូនទិន្នន័យ (Submit)";
-                setTimeout(() => { document.getElementById('message').style.display = "none"; }, 5000);
-            });
-    });
+            .then(() => { alert("Success!"); location.reload(); })
+            .catch(() => { alert("Error!"); btn.disabled = false; btn.innerText = originalText; });
+    }
+
+    document.getElementById('clearBtn').onclick = () => location.reload();
+    document.getElementById('clearUtilBtn').onclick = () => location.reload();
 </script>
 </body>
 </html>
